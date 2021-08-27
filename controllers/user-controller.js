@@ -1,6 +1,7 @@
 const UserDto = require('../dtos/user-dto');
 const { hashOtp, hashPassword } = require('../services/hash-service');
 const { generateOtp, verifyOtp } = require('../services/otp-service');
+const { comparePassword } = require('../services/password-service');
 const { generateTokens, createToken } = require('../services/token-service');
 const { findSingleUser, createUser } = require('../services/user-service');
 
@@ -73,6 +74,43 @@ class UserController {
       } catch (err) {
         console.log(err);
         res.status(500).send(err.message || 'Internal server error');
+      }
+    } else {
+      return res.status(400).json({ error: 'All fields are mandatory' });
+    }
+  }
+  async login(req, res) {
+    const { email, password } = req.body;
+    if (email && password) {
+      try {
+        let user = await findSingleUser({ email });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+        const isValid = await comparePassword(password, user.password);
+
+        if (!isValid)
+          return res.status(400).json({ error: 'Invalid password' });
+
+        const { accessToken, refreshToken } = await generateTokens({
+          _id: user._id,
+          isAdmin: user.isAdmin,
+        });
+
+        await createToken(refreshToken, user._id);
+
+        res.cookie('accesstoken', accessToken, {
+          maxAge: 1000 * 60 * 60 * 24 * 30,
+          httpOnly: true,
+        });
+        res.cookie('refreshtoken', refreshToken, {
+          maxAge: 1000 * 60 * 60 * 24 * 30,
+          httpOnly: true,
+        });
+
+        const userDto = new UserDto(user);
+        res.status(200).json({ user: userDto, auth: true });
+      } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message || 'Internal server error' });
       }
     } else {
       return res.status(400).json({ error: 'All fields are mandatory' });
