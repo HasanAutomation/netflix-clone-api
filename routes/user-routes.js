@@ -7,6 +7,7 @@ const {
   getUsers,
   getUser,
   getStat,
+  refresh,
 } = require('../controllers/user-controller');
 const { auth } = require('../middlewares/auth-middleware');
 
@@ -14,6 +15,7 @@ const router = require('express').Router();
 
 router.get('/', auth, getUsers);
 router.get('/stats', getStat);
+router.get('/refresh', refresh);
 router.route('/send-otp').post(sendOtp);
 router.route('/verify-otp').post(verifyOtp);
 router.post('/login', login);

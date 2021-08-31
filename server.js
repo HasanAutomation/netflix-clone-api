@@ -3,10 +3,17 @@ const express = require('express');
 const { connectDB } = require('./db/db');
 const app = express();
 const cookieParser = require('cookie-parser');
+const cors = require('cors');
 
 const PORT = process.env.PORT || 5500;
 
 // middlewares
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 

@@ -2,7 +2,13 @@ const UserDto = require('../dtos/user-dto');
 const { hashOtp, hashPassword } = require('../services/hash-service');
 const { generateOtp, verifyOtp } = require('../services/otp-service');
 const { comparePassword } = require('../services/password-service');
-const { generateTokens, createToken } = require('../services/token-service');
+const {
+  generateTokens,
+  createToken,
+  verifyRefreshToken,
+  findRefreshToken,
+  updateRefreshToken,
+} = require('../services/token-service');
 const {
   findSingleUser,
   createUser,
@@ -90,6 +96,7 @@ class UserController {
   }
   async login(req, res) {
     const { email, password } = req.body;
+    console.log(email, password);
     if (email && password) {
       try {
         let user = await findSingleUser({ email });
@@ -123,6 +130,44 @@ class UserController {
       }
     } else {
       return res.status(400).json({ error: 'All fields are mandatory' });
+    }
+  }
+
+  async refresh(req, res) {
+    try {
+      const { refreshtoken: refreshTokenFromCookie } = req.cookies;
+      console.log('Token', refreshTokenFromCookie);
+      const userData = verifyRefreshToken(refreshTokenFromCookie);
+      if (!userData) return res.stats(404).json({ error: 'No User found' });
+      const token = await findRefreshToken(userData._id);
+      if (!token) return res.status(401).json({ error: 'Token is not valid' });
+      const user = await findSingleUser({ _id: userData._id });
+      if (!user) return res.status(404).json({ error: 'No User found' });
+
+      const { accessToken, refreshToken } = await generateTokens({
+        _id: user._id,
+        isAdmin: user.isAdmin,
+      });
+
+      await updateRefreshToken(user._id, refreshToken);
+
+      res.cookie('accesstoken', accessToken, {
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+        httpOnly: true,
+      });
+      res.cookie('refreshtoken', refreshToken, {
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+        httpOnly: true,
+      });
+
+      const userDto = new UserDto(user);
+      res.json({
+        auth: true,
+        user: userDto,
+      });
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json({ error: err.message || 'Server Error' });
     }
   }
 
