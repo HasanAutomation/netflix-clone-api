@@ -4,6 +4,7 @@ const {
   getMovie,
   getMovies,
   deleteMovie,
+  getRandomMovieOrSeries,
 } = require('../services/movie-service');
 
 class MovieController {
@@ -33,6 +34,17 @@ class MovieController {
   async getAllMovies(req, res) {
     try {
       res.json(await getMovies());
+    } catch (err) {
+      console.log(err);
+      return res
+        .status(500)
+        .json({ error: err.message || 'Internal server error' });
+    }
+  }
+  async getRandom(req, res) {
+    try {
+      const movie = await getRandomMovieOrSeries(req.query.type);
+      res.json(movie);
     } catch (err) {
       console.log(err);
       return res

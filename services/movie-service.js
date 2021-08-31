@@ -23,6 +23,17 @@ class MovieService {
   async getMovies() {
     return await Movie.find();
   }
+  async getRandomMovieOrSeries(type) {
+    const movie = await Movie.aggregate([
+      {
+        $match: { isSeries: type === 'series' ? true : false },
+      },
+      {
+        $sample: { size: 1 },
+      },
+    ]);
+    return movie;
+  }
 }
 
 module.exports = new MovieService();
