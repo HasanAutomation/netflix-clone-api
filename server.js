@@ -19,6 +19,7 @@ app.get('/', (req, res) => {
 
 // Mount routes
 app.use('/api/users', require('./routes/user-routes'));
+app.use('/api/movies', require('./routes/movie-routes'));
 
 // Listen server
 app.listen(PORT, () => console.log(`Server running on ${PORT}`));

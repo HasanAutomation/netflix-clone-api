@@ -8,7 +8,7 @@ const {
   getUser,
   getStat,
 } = require('../controllers/user-controller');
-const auth = require('../middlewares/auth-middleware');
+const { auth } = require('../middlewares/auth-middleware');
 
 const router = require('express').Router();
 
