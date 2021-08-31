@@ -11,6 +11,7 @@ const {
   deleteUser,
   getUsers,
   getSingleUser,
+  getUserStats,
 } = require('../services/user-service');
 
 class UserController {
@@ -18,7 +19,7 @@ class UserController {
     const { email, password, username } = req.body;
     if (email && password && username) {
       const otp = await generateOtp();
-      const ttl = 1000 * 60 * 1;
+      const ttl = 1000 * 60 * 2;
       const expires = Date.now() + ttl;
 
       const data = `${email}.${otp}.${expires}`;
@@ -161,9 +162,17 @@ class UserController {
   async getUsers(req, res) {
     try {
       const query = req.query.new;
-      console.log('QUERY ==========', req.query);
       const users = query ? await getUsers(10) : await getUsers();
       return res.status(200).json(users);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: err.message || 'Server Error' });
+    }
+  }
+  async getStat(req, res) {
+    try {
+      const stats = await getUserStats();
+      res.json(stats);
     } catch (err) {
       console.log(err);
       res.status(500).json({ error: err.message || 'Server Error' });

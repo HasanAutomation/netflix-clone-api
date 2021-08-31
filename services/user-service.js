@@ -23,6 +23,26 @@ class UserService {
     const users = limit ? await User.find().limit(10) : await User.find();
     return users;
   }
+  async getUserStats() {
+    try {
+      const data = await User.aggregate([
+        {
+          $project: {
+            month: { $month: '$createdAt' },
+          },
+        },
+        {
+          $group: {
+            _id: '$month',
+            total: { $sum: 1 },
+          },
+        },
+      ]);
+      return data;
+    } catch (err) {
+      console.log(err);
+    }
+  }
 }
 
 module.exports = new UserService();
