@@ -8,6 +8,7 @@ const {
   verifyRefreshToken,
   findRefreshToken,
   updateRefreshToken,
+  deleteRefreshToken,
 } = require('../services/token-service');
 const {
   findSingleUser,
@@ -168,6 +169,22 @@ class UserController {
     } catch (err) {
       console.log(err);
       return res.status(500).json({ error: err.message || 'Server Error' });
+    }
+  }
+
+  async logout(req, res) {
+    try {
+      const { refreshtoken } = req.cookies;
+      await deleteRefreshToken(refreshtoken);
+      res.clearCookie('refreshtoken');
+      res.clearCookie('accesstoken');
+      res.json({
+        auth: false,
+        user: null,
+      });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: err.message || 'Server Error' });
     }
   }
 

@@ -27,6 +27,9 @@ class TokenService {
   async updateRefreshToken(userId, token) {
     await RefreshToken.updateOne({ user: userId }, { token }, { new: true });
   }
+  async deleteRefreshToken(token) {
+    await RefreshToken.findOneAndDelete({ token });
+  }
 
   verifyAccessToken(token) {
     return jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
