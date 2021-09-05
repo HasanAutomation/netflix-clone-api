@@ -137,7 +137,6 @@ class UserController {
   async refresh(req, res) {
     try {
       const { refreshtoken: refreshTokenFromCookie } = req.cookies;
-      console.log('Token', refreshTokenFromCookie);
       const userData = verifyRefreshToken(refreshTokenFromCookie);
       if (!userData) return res.stats(404).json({ error: 'No User found' });
       const token = await findRefreshToken(userData._id);
@@ -224,7 +223,7 @@ class UserController {
   async getUsers(req, res) {
     try {
       const query = req.query.new;
-      const users = query ? await getUsers(10) : await getUsers();
+      const users = query ? await getUsers(5) : await getUsers();
       return res.status(200).json(users);
     } catch (err) {
       console.log(err);
