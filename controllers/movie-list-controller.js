@@ -3,7 +3,8 @@ const { create, getListOfMovies } = require('../services/movielist-service');
 class MovieListController {
   async createList(req, res) {
     try {
-      return res.status(201).json(await create(req.body));
+      await create(req.body);
+      return res.status(201).json({ ok: true });
     } catch (err) {
       console.log(err);
       return res.status(500).json({ error: err.message || 'Server Error' });

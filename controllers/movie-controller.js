@@ -11,7 +11,8 @@ class MovieController {
   async create(req, res) {
     try {
       const movie = await createMovie(req.body);
-      res.json(movie);
+      res.json({ ok: true });
+      // res.json(movie);
     } catch (err) {
       console.log(err);
       return res
