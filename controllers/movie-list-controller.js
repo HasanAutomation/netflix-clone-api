@@ -1,4 +1,8 @@
-const { create, getListOfMovies } = require('../services/movielist-service');
+const {
+  create,
+  getListOfMovies,
+  updateMovieList,
+} = require('../services/movielist-service');
 
 class MovieListController {
   async createList(req, res) {
@@ -17,6 +21,16 @@ class MovieListController {
     } catch (err) {
       console.log(err);
       return res.status(500).json({ error: err.message || 'Server Error' });
+    }
+  }
+
+  async update(req, res) {
+    try {
+      await updateMovieList(req.params.id, req.body);
+      res.status(200).json({ ok: true });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ error: err.message || 'Server Error' });
     }
   }
 }
