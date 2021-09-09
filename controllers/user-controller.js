@@ -25,6 +25,9 @@ class UserController {
   async sendOtp(req, res) {
     const { email, password, username } = req.body;
     if (email && password && username) {
+      let user = await findSingleUser({ email });
+      if (user) return res.status(400).json({ error: 'User already exists' });
+
       const otp = await generateOtp();
       const ttl = 1000 * 60 * 2;
       const expires = Date.now() + ttl;
@@ -97,15 +100,13 @@ class UserController {
   }
   async login(req, res) {
     const { email, password } = req.body;
-    console.log(email, password);
     if (email && password) {
       try {
         let user = await findSingleUser({ email });
         if (!user) return res.status(404).json({ error: 'User not found' });
         const isValid = await comparePassword(password, user.password);
 
-        if (!isValid)
-          return res.status(400).json({ error: 'Invalid password' });
+        if (!isValid) return res.status(400).send('Invalid password');
 
         const { accessToken, refreshToken } = await generateTokens({
           _id: user._id,
@@ -137,8 +138,11 @@ class UserController {
   async refresh(req, res) {
     try {
       const { refreshtoken: refreshTokenFromCookie } = req.cookies;
+      if (!refreshTokenFromCookie) {
+        return res.status(400).json({ error: 'No Refresh token provided' });
+      }
       const userData = verifyRefreshToken(refreshTokenFromCookie);
-      if (!userData) return res.stats(404).json({ error: 'No User found' });
+      if (!userData) return res.status(404).json({ error: 'No User found' });
       const token = await findRefreshToken(userData._id);
       if (!token) return res.status(401).json({ error: 'Token is not valid' });
       const user = await findSingleUser({ _id: userData._id });
